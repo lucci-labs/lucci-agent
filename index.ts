@@ -41,7 +41,7 @@ const getChannelId = async (client: TelegramClient, channelName: string): Promis
 }
 
 const main = async () => {
-  // await scraper.setCookies(cookies as any);
+  await scraper.setCookies(cookies as any);
   console.log("Logged in to Twitter");
   const client = new TelegramClient(
     stringSession,
