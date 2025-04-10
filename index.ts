@@ -2,6 +2,7 @@ import { Scraper } from "agent-twitter-client";
 import { generateTweet } from "./agent";
 import { Api, client, TelegramClient } from "telegram";
 import { NewMessage } from "telegram/events";
+import axios from "axios";
 // @ts-ignore
 import input from "input";
 import { cookies } from "./cookies";
@@ -16,8 +17,26 @@ const password = process.env.TWITTER_PASSWORD || "";
 const email = process.env.TWITTER_EMAIL || "";
 const twoFaceSecret = process.env.TWITTER_2FA_SECRET || "";
 
+const pageAccessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN!;
+const pageId = process.env.FACEBOOK_PAGE_ID!;
+
 const scraper = new Scraper();
 
+const postTweet = async (message: string) => {
+  await scraper.sendTweet(message);
+};
+
+export async function postToFacebook(message: string) {
+  try {
+    const url = `https://graph.facebook.com/${pageId}/feed`;
+    await axios.post(url, {
+      message,
+      access_token: pageAccessToken,
+    });
+  } catch (err: any) {
+    console.error('❌ Error posting to Facebook:', err.response?.data || err.message);
+  }
+}
 const handleMessage = async (event: NewMessage) => {
   // @ts-ignore
   const message = event.message;
@@ -33,10 +52,11 @@ const handleMessage = async (event: NewMessage) => {
     }
   }
   const generatedTweet = await generateTweet(message.message);
+  await postToFacebook(generatedTweet);
   if (link) {
-    await scraper.sendTweet(generatedTweet + "\n" + link);
+    await postTweet(generatedTweet + "\n" + link);
   } else {
-    await scraper.sendTweet(generatedTweet);
+    await postTweet(generatedTweet);
   }
 };
 
