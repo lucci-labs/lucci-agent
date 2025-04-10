@@ -25,7 +25,13 @@ const handleMessage = async (event: NewMessage) => {
   if (fromChannelId != listenToChannel) {
     return;
   }
-  const link = message.media?.webpage?.url || "";
+  let link;
+  for (const entity of message.entities) {
+    if (entity.url) {
+      link = entity.url;
+      break;
+    }
+  }
   const generatedTweet = await generateTweet(message.message);
   if (link) {
     await scraper.sendTweet(generatedTweet + "\n" + link);
