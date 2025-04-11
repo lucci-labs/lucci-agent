@@ -1,5 +1,5 @@
 import { Scraper } from "agent-twitter-client";
-import { generateTweet } from "./agent";
+import { generateContent } from "./agent";
 import { Api, client, TelegramClient } from "telegram";
 import { NewMessage } from "telegram/events";
 import axios from "axios";
@@ -51,7 +51,7 @@ const handleMessage = async (event: NewMessage) => {
       break;
     }
   }
-  const generatedTweet = await generateTweet(message.message);
+  const generatedTweet = await generateContent(message.message);
   await postToFacebook(generatedTweet);
   if (link) {
     await postTweet(generatedTweet + "\n" + link);
@@ -89,5 +89,18 @@ const main = async () => {
 
   client.addEventHandler(handleMessage, new NewMessage({}));
 };
+
+const test = async () => {
+  const news = `
+​​WalletConnect (WCT) will be the 67th project on Binance Launchpool
+
+Launchpool Rewards: 40,000,000 WCT (4%). Users can stake BNB, FDUSD, and USDC to farm WCT over a 4-day period from April 11th. Binance will then list WCT on April 15th, 11:00 AM UTC. WalletConnect is a Web3 communications protocol.
+
+👉 x.com/binance/status/1910276431109832785
+`
+
+  const generatedContent = await generateContent(news);
+  console.log(generatedContent);
+}
 
 main();

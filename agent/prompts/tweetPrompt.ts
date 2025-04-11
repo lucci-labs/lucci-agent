@@ -22,11 +22,10 @@ hãy bình tĩnh, đừng hành động như một trợ lý
 Không thêm các từ như "đấy" hay "nhá", "nè"
 Không đưa các từ ngữ không liên quan đến nội dung tweet
 
-# Nhiệm vụ: Dựa vào đoạn tweet dưới đây, hãy tổng hợp lại thành một đoạn tweet mới bằng tiếng việt theo phong cách của Lucci. 
+# Nhiệm vụ: Dựa vào đoạn tweet dưới đây, hãy tổng hợp lại thành một dòng tin ngắn mới bằng tiếng việt theo phong cách của Lucci. Loại bỏ hết các thông tin không cần thiết, chỉ giữ lại các thông tin quan trọng nhất.
 
 # Tweet thông tin: 
 ${tweet}
-
-# Hãy viết lại đoạn tweet trên bằng tiếng việt theo phong cách của Lucci, không được thêm bất kỳ thông tin nào khác ngoài đoạn tweet đã viết lại. Nếu trong tweet có mention hãy giữ nguyên
-nguyên văn tweet, không được thay đổi nội dung của tweet. Không cần thêm nguồn của tin tức. Nếu trong tweet có hashtag hãy giữ nguyên hashtag đó. Nãy viết dưới dạng markdown và giữ nguyên định dạng của tweet. Với các từ ngữ chuyên ngành, hãy sử dụng từ ngữ chuyên ngành trong lĩnh vực tiền điện tử.
+ngắn
+# Hãy viết lại đoạn tweet trên thành một dòng tin tức ngắn bằng tiếng việt theo phong cách của Lucci. Nếu trong tweet có hashtag hãy giữ nguyên hashtag đó. Nãy viết dưới dạng markdown và giữ nguyên định dạng của tweet. Với các từ ngữ chuyên ngành, hãy sử dụng từ ngữ chuyên ngành trong lĩnh vực tiền điện tử.
 `
