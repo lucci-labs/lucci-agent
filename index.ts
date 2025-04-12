@@ -60,12 +60,6 @@ const handleMessage = async (event: NewMessage) => {
   }
 };
 
-const getChannelId = async (client: TelegramClient, channelName: string): Promise<any> => {
-  const channel = await client.getEntity(channelName);
-  const targetChannelId = (channel as Api.Channel).id;
-  return targetChannelId.toString()
-}
-
 const main = async () => {
   await scraper.setCookies(cookies as any);
   console.log("Logged in to Twitter");

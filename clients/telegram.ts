@@ -2,7 +2,7 @@ import { TelegramClient as Client } from "telegram";
 import TelegramBot from "node-telegram-bot-api";
 // @ts-ignore
 import input from "input";
-import { NewMessage } from "telegram/events";
+import { NewMessage, NewMessageEvent } from "telegram/events";
 
 const session = "telegram_session";
 
@@ -12,8 +12,14 @@ export class TelegramClient {
 
   constructor() {}
 
-  initClient = async (appId: number, appHash: string) => {
-    this.client = new Client(session, appId, appHash, {
+  initClient = async () => {
+    if (!process.env.TELEGRAM_APP_ID) {
+      throw new Error("env missing: TELEGRAM_APP_ID is not set");
+    }
+    if (!process.env.TELEGRAM_APP_HASH) {
+      throw new Error("env missing: TELEGRAM_APP_HASH is not set");
+    }
+    this.client = new Client(session, Number(process.env.TELEGRAM_APP_ID), process.env.TELEGRAM_APP_HASH, {
       connectionRetries: 5,
     });
 
@@ -25,8 +31,11 @@ export class TelegramClient {
     });
   };
 
-  initBot = async (token: string) => {
-    this.botClient = new TelegramBot(token);
+  initBot = async () => {
+    if (!process.env.TELEGRAM_BOT_TOKEN) {
+      throw new Error("env missing: TELEGRAM_BOT_TOKEN is not set");
+    }
+    this.botClient = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
   }
 
   getChannelId = async (channelName: string): Promise<any> => {
@@ -47,7 +56,7 @@ export class TelegramClient {
     }
   }
 
-  addChannelListener = async (callback: (message: any) => void) => {
+  addChannelListener = async (callback: (message: NewMessageEvent) => Promise<void>) => {
     if (this.client) {
       this.client.addEventHandler(callback, new NewMessage({}));
     } else {
