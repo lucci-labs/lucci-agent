@@ -6,6 +6,7 @@ import axios from "axios";
 // @ts-ignore
 import input from "input";
 import { cookies } from "./cookies";
+import TelegramBot from "node-telegram-bot-api";
 
 const telegramAppId = Number(process.env.TELEGRAM_APP_ID) || 0;
 const telegramAppHash = process.env.TELEGRAM_APP_HASH || "";
@@ -19,6 +20,11 @@ const twoFaceSecret = process.env.TWITTER_2FA_SECRET || "";
 
 const pageAccessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN!;
 const pageId = process.env.FACEBOOK_PAGE_ID!;
+
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || "";
+const telegramBotChatId = process.env.TELEGRAM_CHAT_ID || "";
+
+const bot = new TelegramBot(telegramBotToken, { polling: false });
 
 const scraper = new Scraper();
 
@@ -37,6 +43,15 @@ export async function postToFacebook(message: string) {
     console.error('❌ Error posting to Facebook:', err.response?.data || err.message);
   }
 }
+
+export async function postToTelegram(message: string) {
+  try {
+    await bot.sendMessage(telegramBotChatId, message);
+  } catch (err: any) {
+    console.error('❌ Error posting to Telegram:', err.response?.data || err.message);
+  }
+}
+
 const handleMessage = async (event: NewMessage) => {
   // @ts-ignore
   const message = event.message;
@@ -67,27 +82,32 @@ const getChannelId = async (client: TelegramClient, channelName: string): Promis
 }
 
 const main = async () => {
-  await scraper.setCookies(cookies as any);
-  console.log("Logged in to Twitter");
-  const client = new TelegramClient(
-    stringSession,
-    telegramAppId,
-    telegramAppHash,
-    {
-      connectionRetries: 5,
-    }
-  );
+  // await scraper.setCookies(cookies as any);
+  // console.log("Logged in to Twitter");
+  // const client = new TelegramClient(
+  //   stringSession,
+  //   telegramAppId,
+  //   telegramAppHash,
+  //   {
+  //     connectionRetries: 5,
+  //   }
+  // );
 
-  await client.start({
-    phoneNumber: async () => await input.text("Input phone number: "),
-    password: async () => await input.text("Input 2fa: "),
-    phoneCode: async () => await input.text("Input Telegram code: "),
-    onError: (err) => console.log(err),
-  });
-  console.log("Logged in to Telegram");
-  // console.log(await getChannelId(client, "CoinDeskGlobal"))
+  // await client.start({
+  //   phoneNumber: async () => await input.text("Input phone number: "),
+  //   password: async () => await input.text("Input 2fa: "),
+  //   phoneCode: async () => await input.text("Input Telegram code: "),
+  //   onError: (err) => console.log(err),
+  // });
+  // console.log("Logged in to Telegram");
+  // // console.log(await getChannelId(client, "CoinDeskGlobal"))
 
-  client.addEventHandler(handleMessage, new NewMessage({}));
+  // client.addEventHandler(handleMessage, new NewMessage({}));
+
+  const generatedTweet = await generateTweet(`
+Kraken has launched Europe’s largest regulated crypto derivatives offering, providing perpetual and fixed-maturity futures to clients across the European Economic Area. The products are offered through its Cyprus-based MiFID II-regulated entity, Payward Europe Digital Solutions (CY) Ltd, following its earlier acquisition of a licensed investment firm. — link`)
+  await postToTelegram(generatedTweet)
+  console.log(generatedTweet);
 };
 
 main();
