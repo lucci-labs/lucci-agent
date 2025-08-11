@@ -1,7 +1,7 @@
 // test-cm.ts
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { CmPrompt, type CmParams } from "./agent/prompts/cmPrompt"; // prompt đã tạo
+import { cmPrompt, type CmParams } from "./agent/prompts/cmPrompt"; // prompt đã tạo
 
 export const lucciLabsParams: CmParams = {
   message: "",
@@ -53,7 +53,7 @@ export async function testCmPrompt() {
   lucciLabsParams.message = "Làm thế nào để setup Lucci?";
   const { text } = await generateText({
     model: google("gemini-2.0-flash-exp"),
-    prompt: CmPrompt(lucciLabsParams),
+    prompt: cmPrompt(lucciLabsParams),
   });
 
   console.log("RAW MODEL OUTPUT:\n", text);
