@@ -22,7 +22,7 @@ export class XClient {
   }
 
   init = async () => {
-    if (Bun.file(cookiePath).size > 0) {
+    if (await Bun.file(cookiePath).exists()) {
       console.log("Loading cookies from file");
 
       const cookies = await Bun.file(cookiePath).text();

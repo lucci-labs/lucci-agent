@@ -1,113 +1,13 @@
-import { Scraper } from "agent-twitter-client";
-import { generateTweet } from "./agent";
-import { Api, client, TelegramClient } from "telegram";
-import { NewMessage } from "telegram/events";
-import axios from "axios";
-// @ts-ignore
-import input from "input";
-import { cookies } from "./cookies";
-import TelegramBot from "node-telegram-bot-api";
+import { Agent } from "./agent";
 
-const telegramAppId = Number(process.env.TELEGRAM_APP_ID) || 0;
-const telegramAppHash = process.env.TELEGRAM_APP_HASH || "";
-const listenToChannel = process.env.TELEGRAM_LISTEN_CHANNEL || "";
-const stringSession = "my_session";
-
-const username = process.env.TWITTER_USERNAME || "";
-const password = process.env.TWITTER_PASSWORD || "";
-const email = process.env.TWITTER_EMAIL || "";
-const twoFaceSecret = process.env.TWITTER_2FA_SECRET || "";
-
-const pageAccessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN!;
-const pageId = process.env.FACEBOOK_PAGE_ID!;
-
-const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || "";
-const telegramBotChatId = process.env.TELEGRAM_CHAT_ID || "";
-
-const bot = new TelegramBot(telegramBotToken, { polling: false });
-
-const scraper = new Scraper();
-
-const postTweet = async (message: string) => {
-  await scraper.sendTweet(message);
-};
-
-export async function postToFacebook(message: string) {
-  try {
-    const url = `https://graph.facebook.com/${pageId}/feed`;
-    await axios.post(url, {
-      message,
-      access_token: pageAccessToken,
-    });
-  } catch (err: any) {
-    console.error('❌ Error posting to Facebook:', err.response?.data || err.message);
-  }
-}
-
-export async function postToTelegram(message: string) {
-  try {
-    await bot.sendMessage(telegramBotChatId, message);
-  } catch (err: any) {
-    console.error('❌ Error posting to Telegram:', err.response?.data || err.message);
-  }
-}
-
-const handleMessage = async (event: NewMessage) => {
-  // @ts-ignore
-  const message = event.message;
-  const fromChannelId = message.peerId.channelId.toString();
-  if (fromChannelId != listenToChannel) {
-    return;
-  }
-  let link;
-  for (const entity of message.entities) {
-    if (entity.url) {
-      link = entity.url;
-      break;
-    }
-  }
-  const generatedTweet = await generateTweet(message.message);
-  await postToFacebook(generatedTweet);
-  if (link) {
-    await postTweet(generatedTweet + "\n" + link);
-  } else {
-    await postTweet(generatedTweet);
-  }
-};
-
-const getChannelId = async (client: TelegramClient, channelName: string): Promise<any> => {
-  const channel = await client.getEntity(channelName);
-  const targetChannelId = (channel as Api.Channel).id;
-  return targetChannelId.toString()
-}
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 
 const main = async () => {
-  // await scraper.setCookies(cookies as any);
-  // console.log("Logged in to Twitter");
-  // const client = new TelegramClient(
-  //   stringSession,
-  //   telegramAppId,
-  //   telegramAppHash,
-  //   {
-  //     connectionRetries: 5,
-  //   }
-  // );
+  const agent = new Agent(TELEGRAM_BOT_TOKEN);
+  await agent.init();
+  await agent.start();
+}
 
-  // await client.start({
-  //   phoneNumber: async () => await input.text("Input phone number: "),
-  //   password: async () => await input.text("Input 2fa: "),
-  //   phoneCode: async () => await input.text("Input Telegram code: "),
-  //   onError: (err) => console.log(err),
-  // });
-  // console.log("Logged in to Telegram");
-  // // console.log(await getChannelId(client, "CoinDeskGlobal"))
-
-  // client.addEventHandler(handleMessage, new NewMessage({}));
-
-  const generatedTweet = await generateTweet(`
-Kraken has launched Europe’s largest regulated crypto derivatives offering, providing perpetual and fixed-maturity futures to clients across the European Economic Area. The products are offered through its Cyprus-based MiFID II-regulated entity, Payward Europe Digital Solutions (CY) Ltd, following its earlier acquisition of a licensed investment firm. — link`)
-  await postToTelegram(generatedTweet)
-  console.log(generatedTweet);
-};
-
-main();
+main().catch((error) => {
+  console.error("Error initializing runtime:", error);
+});
