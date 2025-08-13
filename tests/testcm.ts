@@ -1,7 +1,7 @@
 // test-cm.ts
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { cmPrompt, type CmParams } from "./agent/prompts/cmPrompt"; // prompt đã tạo
+import { cmPrompt, type CmParams } from "../agent/prompts/cmPrompt"; // prompt đã tạo
 
 export const lucciLabsParams: CmParams = {
   message: "",
