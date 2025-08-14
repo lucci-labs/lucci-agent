@@ -4,7 +4,7 @@ type TweetOpts = {
   allowEmoji?: boolean;       // default false
 };
 
-export const tweetPromptV2 = (tweet: string, opts: TweetOpts = {}) => {
+export const generateNewsInstruction = (tweet: string, opts: TweetOpts = {}) => {
   const maxChars = opts.maxChars ?? 280;
   const preserveLineBreaks = opts.preserveLineBreaks ?? true;
   const allowEmoji = opts.allowEmoji ?? false;

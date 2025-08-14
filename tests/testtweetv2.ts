@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { tweetPromptV2 } from "../agent/prompts/tweetv2";
+import { tweetPromptV2 } from "../agent/prompts/tweet";
 import { google } from "@ai-sdk/google";
 
 const main = async () => {

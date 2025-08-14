@@ -1,13 +1,16 @@
 import rocksdb from "rocksdb";
 
-class RocksDBHandler {
+export class CacheService {
   private db: rocksdb;
 
-  constructor(path: string) {
-    this.db = rocksdb(path);
+  constructor() {
+    if (!process.env.CACHE_DB_PATH) {
+      throw new Error("CACHE_DB_PATH environment variable is not set");
+    }
+    this.db = rocksdb(process.env.CACHE_DB_PATH);
   }
 
-  async open(): Promise<void> {
+  async init(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.db.open({ create_if_missing: true }, (err: any) => {
         if (err) {
@@ -61,7 +64,3 @@ class RocksDBHandler {
     });
   }
 }
-
-const dbHandler = new RocksDBHandler("./db");
-
-export default dbHandler;

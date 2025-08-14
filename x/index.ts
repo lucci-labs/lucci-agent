@@ -1,26 +1,20 @@
-import {
-  Scraper,
-  SearchMode,
-  type Profile,
-} from "agent-twitter-client";
+import { Scraper, SearchMode, type Profile } from "agent-twitter-client";
 
 const cookiePath = "cookies.txt";
 
-export interface Mention {
-  tweetId: string;
+interface Reply {
   username: string;
-  displayname: string;
-  tweet: string;
+  text: string;
 }
 
-export interface Reply {
+export interface Mention {
   id: string;
   text: string;
   username: string;
-  parentTweet: string
+  parentTweets: Reply[];
 }
 
-export class XClient {
+export class XService {
   scraper: Scraper;
   me: Profile | undefined;
 
@@ -71,14 +65,11 @@ export class XClient {
     this.me = me;
   };
 
-  replyToTweet = async (tweetId: string, text: string) => {
-    if (!this.me) {
-      throw new Error("Not logged in, must call init() first");
-    }
-    if (!this.me.username) {
-      throw new Error("No username found, must call init() first");
-    }
+  sendTweet = async (text: string): Promise<Response> => {
+    return this.scraper.sendTweet(text);
+  };
 
+  replyToTweet = async (tweetId: string, text: string) => {
     const response = await this.scraper.sendTweet(text, tweetId);
     if (response) {
       console.log("Tweet sent successfully");
@@ -95,47 +86,8 @@ export class XClient {
       throw new Error("No username found, must call init() first");
     }
     const tweet = await this.scraper.getTweet(tweetId);
-    return tweet
-  }
-
-  getReplies = async (): Promise<Reply[]> => {
-    if (!this.me) {
-      throw new Error("Not logged in, must call init() first");
-    }
-    if (!this.me.username) {
-      throw new Error("No username found, must call init() first");
-    }
-    const tweets = this.scraper.searchTweets(
-      this.me.username,
-      20,
-      SearchMode.Latest
-    );
-
-    const replies: Reply[] = [];
-    const foundedTweet: string[] = [];
-
-    let tweet = await tweets.next();
-    while (!tweet.done) {
-      const tweetData = tweet.value;
-      if (tweetData && tweetData.id && !foundedTweet.includes(tweetData.id) && tweetData.text?.includes(`${this.me.username}`)) {
-        foundedTweet.push(tweetData.id);
-        if (tweetData.isReply && tweetData.inReplyToStatusId) {
-          const parentTweet = await this.scraper.getTweet(tweetData.inReplyToStatusId);
-          if (parentTweet && parentTweet.username == this.me.username) {
-            replies.push({
-              id: tweetData.id,
-              text: tweetData.text || "",
-              username: tweetData.username || "",
-              parentTweet: parentTweet.text || ""
-            });
-          }
-        }
-      }
-      tweet = await tweets.next();
-    }
-
-    return replies;
-  }
+    return tweet;
+  };
 
   getMentions = async (): Promise<Mention[]> => {
     if (!this.me) {
@@ -146,7 +98,7 @@ export class XClient {
     }
     const tweets = this.scraper.searchTweets(
       this.me.username,
-      20,
+      1,
       SearchMode.Latest
     );
 
@@ -156,21 +108,42 @@ export class XClient {
 
     const foundedTweet: string[] = [];
     while (!tweet.done) {
-      const tweetData = tweet.value;
+      let tweetData = tweet.value;
       if (tweetData && tweetData.id && !foundedTweet.includes(tweetData.id)) {
         foundedTweet.push(tweetData.id);
         const { text } = tweetData;
         if (tweetData.username != this.me.username) {
+          let haveMention = false;
           for (const mention of tweetData.mentions) {
             if (mention.username == this.me.username) {
-              console.log(tweetData)
-              mentions.push({
-                tweetId: tweetData.id,
-                username: tweetData.username || "",
-                displayname: tweetData.name || "",
-                tweet: text || "",
-              });
+              haveMention = true;
             }
+          }
+
+          if (haveMention) {
+            let mention: Mention = {
+              username: tweetData.username || "",
+              text: text || "",
+              id: tweetData.id,
+              parentTweets: [],
+            };
+            let tweet = tweetData;
+            while (tweet && tweet.isReply && tweet.inReplyToStatusId) {
+              const parentTweet = await this.scraper.getTweet(
+                tweet.inReplyToStatusId
+              );
+              if (parentTweet) {
+                mention.parentTweets.push({
+                  text: parentTweet.text || "",
+                  username: parentTweet.username || "",
+                });
+                tweet = parentTweet;
+                continue;
+              }
+              break;
+            }
+
+            mentions.push(mention);
           }
         }
       }
