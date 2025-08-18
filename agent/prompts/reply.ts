@@ -25,7 +25,6 @@ TASK
 CONTENT GUIDELINES
 - Offer **insight or financial perspective** useful to traders/investors.
 - If applicable, hint at **market impact** or **positioning** (risk-aware).
-- If data is thin, state uncertainty in one short clause and name **one specific thing to watch** next (e.g., funding, OI, liquidity zones, unlocks, treasury flows).
 - Prefer concrete figures from NEWS SNIPPET (e.g., %, amounts, dates) when relevant.
 
 REPLY RULES
