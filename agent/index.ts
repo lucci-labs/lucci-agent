@@ -56,6 +56,15 @@ export class Agent {
     }
   }
 
+  async getSourceNews(news: string): Promise<string> {
+    try {
+      const cachedNews = await this.cacheService.get(news);
+      return cachedNews || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
   async generateResponse(instruction: string): Promise<string> {
     try {
       const { text } = await generateText({
@@ -86,6 +95,7 @@ export class Agent {
   async onNewsReceived(news: string) {
     const rewrittenNews = await this.generateResponse(generateNewsInstruction(news));
     if (rewrittenNews) {
+      await this.cacheService.set(rewrittenNews, news);
       await this.postNews(rewrittenNews);
     }
   }
@@ -95,7 +105,16 @@ export class Agent {
 
     for (const mention of mentions) {
       if (!await this.isProcessedMention(mention.id)) {
-        const replyText = await this.generateResponse(generateReplyInstruction(mention));
+        const sourceNews = []
+        for (const parentTweet of mention.parentTweets) {
+          const cachedNews = await this.getSourceNews(parentTweet.text);
+          if (cachedNews) {
+            sourceNews.push(cachedNews);
+          }
+        }
+
+        const news = sourceNews.length > 0 ? sourceNews.join("\n") : "";
+        const replyText = await this.generateResponse(generateReplyInstruction(mention, news));
         if (replyText) {
           await this.postReply(replyText, mention.id);
           await this.cacheService.set(mention.id, true); // Mark as processed
