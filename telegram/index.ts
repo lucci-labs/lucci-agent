@@ -52,7 +52,6 @@ export class TelegramService {
     return await this.bot.sendMessage(chatId, message, {
       parse_mode: "Markdown",
       disable_web_page_preview: true,
-      protect_content: true,
       reply_markup: {
         force_reply,
         inline_keyboard: inlineKeyboard,
